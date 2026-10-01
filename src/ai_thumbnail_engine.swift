@@ -145,9 +145,13 @@ class AIThumbnailExtractor {
         return squareImage
     }
 
-    /// Sets Finder Custom Icon for file
+    private static let iconLock = NSLock()
+
+    /// Sets Finder Custom Icon for file (Thread-safe)
     static func applyIcon(image: NSImage, to fileURL: URL) -> Bool {
         let squareIcon = createAspectFitSquareIcon(from: image)
+        iconLock.lock()
+        defer { iconLock.unlock() }
         return NSWorkspace.shared.setIcon(squareIcon, forFile: fileURL.path, options: [])
     }
 }
@@ -187,18 +191,33 @@ func scanFolder(dirPath: String, recursive: Bool) -> (total: Int, success: Int) 
         return (0, 0)
     }
     
-    var total = 0
-    var successCount = 0
-    
+    var filesToProcess: [URL] = []
     for case let fileURL as URL in enumerator {
         let ext = fileURL.pathExtension.lowercased()
         if ext == "ai" || ext == "eps" {
-            total += 1
+            filesToProcess.append(fileURL)
+        }
+    }
+    
+    let total = filesToProcess.count
+    if total == 0 { return (0, 0) }
+    
+    var successCount = 0
+    let lock = NSLock()
+    
+    let queue = OperationQueue()
+    queue.maxConcurrentOperationCount = 8
+    
+    for fileURL in filesToProcess {
+        queue.addOperation {
             if processFile(path: fileURL.path) {
+                lock.lock()
                 successCount += 1
+                lock.unlock()
             }
         }
     }
+    queue.waitUntilAllOperationsAreFinished()
     
     return (total, successCount)
 }

@@ -114,8 +114,14 @@ cat << EOF > "$TARGET_PATH/Contents/document.wflow"
 </plist>
 EOF
 
-# Refresh services
+# Enable in macOS Finder Services preferences
+defaults write pbs NSServicesStatus -dict-add '"(null) - ✨ Generate AI Thumbnails - runWorkflowAsService"' '{"enabled_context_menu" = 1; "enabled_services_menu" = 1;}'
+defaults write pbs FinderActive -dict-add '✨ Generate AI Thumbnails' 1
+
+# Refresh services and Finder
 /System/Library/CoreServices/pbs -flush 2>/dev/null || true
+/System/Library/CoreServices/pbs -update 2>/dev/null || true
+killall Finder 2>/dev/null || true
 
 echo "✅ Finder Quick Action Installed Successfully!"
 echo "👉 Now in Finder, right-click any .ai file or folder and choose: 'Quick Actions' > '✨ Generate AI Thumbnails'!"

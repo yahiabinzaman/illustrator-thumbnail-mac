@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Thumbnail Codec & Preview Generator for Mac</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: rgba(18, 24, 38, 0.75);
+            --bg-card-hover: rgba(28, 36, 56, 0.85);
+            --primary: #f97316;
+            --primary-glow: rgba(249, 115, 22, 0.35);
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.3);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(249, 115, 22, 0.4);
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 32px 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            font-weight: 700;
+            box-shadow: 0 8px 24px var(--primary-glow);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .grid-dashboard {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.3);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .input-text {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .input-text:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 13px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: #fff;
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px var(--primary-glow);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 18px;
+            max-height: 620px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .gallery-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        .gallery-grid::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+        }
+
+        .file-item {
+            background: rgba(15, 20, 32, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-item:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-highlight);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+        }
+
+        .file-thumb-box {
+            width: 100%;
+            height: 140px;
+            background: #060911;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .file-thumb-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .file-item:hover .file-thumb-box img {
+            transform: scale(1.08);
+        }
+
+        .file-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 4px;
+        }
+
+        .file-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .file-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-generic {
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-apply-item {
+            margin-top: 6px;
+            padding: 6px 10px;
+            font-size: 11px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-apply-item:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .log-terminal {
+            margin-top: 20px;
+            background: #050811;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #38bdf8;
+            height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-group">
+                <div class="logo-icon">Ai</div>
+                <div class="header-title">
+                    <h1>AI Thumbnail Codec for Mac</h1>
+                    <p>macOS Finder Vector Thumbnail Engine & Auto-Injector</p>
+                </div>
+            </div>
+            <div class="status-badge" id="watcherBadge">
+                <div class="pulse-dot"></div>
+                <span>Codec Engine Ready</span>
+            </div>
+        </header>
+
+        <div class="grid-dashboard">
+            <!-- Left Control Panel -->
+            <div class="card">
+                <div class="card-title">⚙️ Scanner & Codec Controls</div>
+                
+                <div class="input-group">
+                    <label class="input-label">Target Directory (ফোল্ডার পাথ):</label>
+                    <input type="text" id="targetFolder" class="input-text" value="~/Downloads">
+                </div>
+
+                <div class="input-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="chkRecursive" checked style="accent-color: var(--primary); width: 16px; height: 16px;">
+                    <label for="chkRecursive" style="font-size: 13px; color: var(--text-main); cursor: pointer;">সব সাব-ফোল্ডার স্ক্যান করুন (Recursive)</label>
+                </div>
+
+                <button class="btn btn-primary" id="btnScanConvert">
+                    <span>⚡ Generate All Finder Thumbnails</span>
+                </button>
+
+                <button class="btn btn-secondary" id="btnRefreshList">
+                    <span>🔄 Refresh File List</span>
+                </button>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Total AI Files</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Thumbnails Ready</div>
+                        <div class="stat-value" id="statThumb" style="color: var(--success);">0</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
+                    <div class="card-title" style="font-size: 14px; margin-bottom: 10px;">👀 Live Auto-Watcher</div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+                        ইলাস্ট্রেটরে ফাইল সেভ করার সাথে সাথে ফাইন্ডারে স্বয়ংক্রিয়ভাবে থাম্বনেইল চলে আসার জন্য চালু রাখুন।
+                    </p>
+                    <button class="btn btn-secondary" id="btnToggleWatcher" style="background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8;">
+                        <span id="watcherBtnText">▶️ Start Auto-Watcher</span>
+                    </button>
+                </div>
+
+                <div class="log-terminal" id="logBox">🖥️ Ready to generate thumbnails...</div>
+            </div>
+
+            <!-- Right Gallery Panel -->
+            <div class="card">
+                <div class="gallery-header">
+                    <div class="card-title" style="margin-bottom: 0;">🎨 Vector Files Preview Gallery</div>
+                    <div style="font-size: 12px; color: var(--text-muted);" id="galleryCount">Showing 0 files</div>
+                </div>
+
+                <div class="gallery-grid" id="galleryGrid">
+                    <div class="empty-state">
+                        <div class="empty-icon">📁</div>
+                        <p>ফাইল লোড করতে উপরের ফোল্ডার সিলেক্ট করে Refresh দিন</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const targetFolderInput = document.getElementById('targetFolder');
+        const btnScanConvert = document.getElementById('btnScanConvert');
+        const btnRefreshList = document.getElementById('btnRefreshList');
+        const btnToggleWatcher = document.getElementById('btnToggleWatcher');
+        const watcherBtnText = document.getElementById('watcherBtnText');
+        const galleryGrid = document.getElementById('galleryGrid');
+        const galleryCount = document.getElementById('galleryCount');
+        const statTotal = document.getElementById('statTotal');
+        const statThumb = document.getElementById('statThumb');
+        const logBox = document.getElementById('logBox');
+
+        function appendLog(msg) {
+            logBox.textContent += "\n" + msg;
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        async function loadFiles() {
+            const folder = targetFolderInput.value;
+            appendLog(`🔍 Scanning folder: ${folder}...`);
+            try {
+                const res = await fetch(`/api/list_files?folder=${encodeURIComponent(folder)}`);
+                const data = await res.json();
+                renderGallery(data.files || []);
+            } catch(e) {
+                appendLog(`❌ Error loading files: ${e.message}`);
+            }
+        }
+
+        function renderGallery(files) {
+            statTotal.textContent = files.length;
+            let thumbCount = 0;
+            galleryCount.textContent = `Showing ${files.length} vector files`;
+
+            if (files.length === 0) {
+                galleryGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📂</div>
+                        <p>এই ফোল্ডারে কোনো .ai ফাইল পাওয়া যায়নি</p>
+                    </div>
+                `;
+                statThumb.textContent = 0;
+                return;
+            }
+
+            galleryGrid.innerHTML = '';
+            files.forEach(f => {
+                if (f.has_thumbnail) thumbCount++;
+                const card = document.createElement('div');
+                card.className = 'file-item';
+                
+                const thumbHtml = f.thumbnail_data 
+                    ? `<img src="${f.thumbnail_data}" alt="${f.name}">`
+                    : `<span style="font-size: 36px; opacity: 0.5;">🎨</span>`;
+
+                const badgeHtml = f.has_thumbnail
+                    ? `<span class="file-badge badge-active">✔ Preview Injected</span>`
+                    : `<span class="file-badge badge-generic">No Preview</span>`;
+
+                const sizeKB = (f.size / 1024).toFixed(1) + ' KB';
+
+                card.innerHTML = `
+                    <div class="file-thumb-box">
+                        ${thumbHtml}
+                    </div>
+                    <div class="file-name" title="${f.name}">${f.name}</div>
+                    <div class="file-meta">${sizeKB}</div>
+                    ${badgeHtml}
+                    <button class="btn-apply-item" onclick="applySingle('${encodeURIComponent(f.path)}')">⚡ Set Finder Icon</button>
+                `;
+                galleryGrid.appendChild(card);
+            });
+
+            statThumb.textContent = thumbCount;
+            appendLog(`✅ Found ${files.length} files (${thumbCount} previews ready)`);
+        }
+
+        async function applySingle(encodedPath) {
+            const path = decodeURIComponent(encodedPath);
+            appendLog(`⚙️ Applying thumbnail to: ${path}...`);
+            try {
+                const res = await fetch('/api/process_file', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({path: path})
+                });
+                const data = await res.json();
+                appendLog(data.output || "Done!");
+            } catch(e) {
+                appendLog(`❌ Error: ${e.message}`);
+            }
+        }
+
+        btnScanConvert.addEventListener('click', async () => {
+            const folder = targetFolderInput.value;
+            const recursive = document.getElementById('chkRecursive').checked;
+            btnScanConvert.disabled = true;
+            btnScanConvert.innerHTML = `<span>⏳ Processing All Files...</span>`;
+            appendLog(`🚀 Starting Batch Codec on: ${folder}...`);
+
+            try {
+                const res = await fetch('/api/process_folder', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({folder: folder, recursive: recursive})
+                });
+                const data = await res.json();
+                appendLog(data.output || "Completed successfully!");
+                await loadFiles();
+            } catch(e) {
+                appendLog(`❌ Error: ${e.message}`);
+            } finally {
+                btnScanConvert.disabled = false;
+                btnScanConvert.innerHTML = `<span>⚡ Generate All Finder Thumbnails</span>`;
+            }
+        });
+
+        btnRefreshList.addEventListener('click', loadFiles);
+
+        btnToggleWatcher.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/toggle_watcher', {method: 'POST'});
+                const data = await res.json();
+                if (data.watcher_active) {
+                    watcherBtnText.textContent = "⏹️ Stop Auto-Watcher";
+                    btnToggleWatcher.style.background = "rgba(239, 68, 68, 0.15)";
+                    btnToggleWatcher.style.borderColor = "rgba(239, 68, 68, 0.3)";
+                    btnToggleWatcher.style.color = "#ef4444";
+                    appendLog("👀 Auto-Watcher Started! Files in Downloads & Desktop will be thumbnailed automatically.");
+                } else {
+                    watcherBtnText.textContent = "▶️ Start Auto-Watcher";
+                    btnToggleWatcher.style.background = "rgba(56, 189, 248, 0.1)";
+                    btnToggleWatcher.style.borderColor = "rgba(56, 189, 248, 0.3)";
+                    btnToggleWatcher.style.color = "#38bdf8";
+                    appendLog("⏹️ Auto-Watcher Stopped.");
+                }
+            } catch(e) {
+                appendLog(`❌ Error toggling watcher: ${e.message}`);
+            }
+        });
+
+        // Initial load
+        loadFiles();
+    </script>
+</body>
+</html>

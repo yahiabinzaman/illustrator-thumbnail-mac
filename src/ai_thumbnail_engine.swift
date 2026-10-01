@@ -16,8 +16,8 @@ class AIThumbnailExtractor {
         guard let fileHandle = try? FileHandle(forReadingFrom: fileURL) else { return nil }
         defer { try? fileHandle.close() }
         
-        // Read the first 2MB (XMP metadata is always near the beginning)
-        let headerData = fileHandle.readData(ofLength: 2 * 1024 * 1024)
+        // Read the first 8MB to handle files with extensive fonts/swatches/artboards
+        let headerData = fileHandle.readData(ofLength: 8 * 1024 * 1024)
         guard !headerData.isEmpty else { return nil }
         
         let startTag = "xmpGImg:image>".data(using: .utf8)!
@@ -47,7 +47,7 @@ class AIThumbnailExtractor {
         guard let fileHandle = try? FileHandle(forReadingFrom: fileURL) else { return nil }
         defer { try? fileHandle.close() }
         
-        let headerData = fileHandle.readData(ofLength: 1024 * 1024)
+        let headerData = fileHandle.readData(ofLength: 8 * 1024 * 1024)
         guard let text = String(data: headerData, encoding: .ascii) else { return nil }
         
         guard let startRange = text.range(of: "%AI7_Thumbnail:") else { return nil }
@@ -81,25 +81,30 @@ class AIThumbnailExtractor {
         return NSImage(data: data)
     }
     
-    /// Try extracting PDF first page render if PDF stream exists
+    /// Try extracting PDF first page render if PDF stream exists AND is not Adobe dummy text
     static func extractPDFPage(from fileURL: URL) -> NSImage? {
         guard let pdfDoc = PDFDocument(url: fileURL),
               let page = pdfDoc.page(at: 0) else { return nil }
+        
+        // Strictly filter out Adobe's dummy placeholder text page
+        if let text = page.string, text.contains("saved without PDF Content") {
+            return nil
+        }
         
         let pageRect = page.bounds(for: .mediaBox)
         let targetSize = NSSize(width: max(pageRect.width, 256), height: max(pageRect.height, 256))
         return page.thumbnail(of: targetSize, for: .mediaBox)
     }
     
-    /// Master extractor: Tries XMP -> PDF -> AI7
+    /// Master extractor: Tries XMP -> AI7 -> PDF (valid artwork only)
     static func getThumbnail(for fileURL: URL) -> NSImage? {
         if let img = extractXMPThumbnail(from: fileURL) {
             return img
         }
-        if let img = extractPDFPage(from: fileURL) {
+        if let img = extractAI7Thumbnail(from: fileURL) {
             return img
         }
-        if let img = extractAI7Thumbnail(from: fileURL) {
+        if let img = extractPDFPage(from: fileURL) {
             return img
         }
         return nil

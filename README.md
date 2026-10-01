@@ -29,17 +29,26 @@ This native Swift engine parses the internal **XMP metadata** and embedded JPEG 
 
 ## 📥 Installation & Setup
 
-### Method 1: 1-Click Installer (Recommended)
-1. Download or open **`Illustrator_Thumbnail_Mac.dmg`** (or open the project folder).
-2. Double-click **`1. [CLICK ME] Enable 24-7 Auto Preview.command`** (or `Install_Permanent_Background_Service.command`).
-3. Done! The service is now permanently active in the background and will automatically start whenever your Mac boots up.
+### 💻 How to Install on Any Mac (অন্য যেকোনো Mac-এ ইনস্টল করার নিয়ম):
+
+#### Option A: Using the DMG File (No Terminal Needed - সবচেয়ে সহজ)
+1. আপনার GitHub থেকে **`Illustrator_Thumbnail_Mac.dmg`** ফাইলটি ডাউনলোড করুন (অথবা পেনড্রাইভ/NAS দিয়ে অন্য Mac-এ নিন)।
+2. DMG ফাইলে ডাবল-ক্লিক করে ওপেন করুন।
+3. ভেতরে থাকা **`1. [CLICK ME] Enable 24-7 Auto Preview.command`** ফাইলে ডাবল-ক্লিক করুন।
+4. ব্যস! ওই Mac-এ এটি স্থায়ীভাবে ইনস্টল হয়ে যাবে এবং Mac চালু হওয়ার সাথে সাথে একা একাই ব্যাকগ্রাউন্ডে প্রিভিউ চালু রাখবে।
 
 ---
 
-### Method 2: Terminal / Command Line Installation
+#### Option B: Terminal 1-Line Quick Install (টার্মিনাল দিয়ে এক ক্লিকে)
+যেকোনো Mac-এর Terminal ওপেন করে শুধু এই কমান্ডটি পেস্ট করে Enter দিন:
 
-Open Terminal and run the following commands:
+```bash
+git clone https://github.com/yahiabinzaman/illustrator-thumbnail-mac.git ~/illustrator-thumbnail-mac && cd ~/illustrator-thumbnail-mac && chmod +x *.command *.sh bin/ai-codec && ./Install_Permanent_Background_Service.command
+```
 
+---
+
+### ⌨️ Manual Terminal Installation (ম্যানুয়াল ধাপসমূহ)
 ```bash
 # 1. Clone the repository
 git clone https://github.com/yahiabinzaman/illustrator-thumbnail-mac.git

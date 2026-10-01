@@ -218,11 +218,18 @@ func startWatcher(watchPaths: [String]) {
     let callback: FSEventStreamCallback = { (streamRef, clientCallBackInfo, numEvents, eventPaths, eventFlags, eventIds) in
         guard let paths = unsafeBitCast(eventPaths, to: NSArray.self) as? [String] else { return }
         for path in paths {
-            let ext = (path as NSString).pathExtension.lowercased()
-            if ext == "ai" || ext == "eps" {
-                // Brief pause so Illustrator finishes writing before icon injection
-                usleep(300_000)
-                _ = processFile(path: path)
+            var isDir: ObjCBool = false
+            if FileManager.default.fileExists(atPath: path, isDirectory: &isDir) {
+                if isDir.boolValue {
+                    // Automatically process any folders that were copied/unzipped/moved
+                    _ = scanFolder(dirPath: path, recursive: true)
+                } else {
+                    let ext = (path as NSString).pathExtension.lowercased()
+                    if ext == "ai" || ext == "eps" {
+                        usleep(300_000)
+                        _ = processFile(path: path)
+                    }
+                }
             }
         }
     }
